@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>pEmissorNew - Edição de Usuário</title>
+    <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+    <dialog id="modal-mensagem-sistema" class="modal-message-dialog">
+        <div class="modal-message-card">
+            <div class="modal-message-icon" id="modal-mensagem-icone"></div>
+            <h3 id="modal-mensagem-titulo">Mensagem</h3>
+            <p id="modal-mensagem-conteudo">Texto da mensagem.</p>
+            <button type="button" class="btn-primary-orange" onclick="fecharModalMensagem()">OK</button>
+        </div>
+    </dialog>
+
+    <div class="app-layout">
+        <aside class="sidebar">
+            <div>
+                <div class="brand-zone">pEmissorNew</div>
+                <div class="nav-section">
+                    <div class="nav-section-title">Perfil</div>
+                    <ul class="nav-list">
+                        <li><button class="nav-item-btn highlight-menu active" type="button">👤 Editar Perfil</button></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="sidebar-footer">
+                <button class="nav-item-btn" type="button" onclick="voltarParaInicio()">← Voltar ao início</button>
+            </div>
+        </aside>
+
+        <div class="right-container">
+            <header class="topbar">
+                <div class="page-title-display">Edição de Usuário</div>
+                <div class="profile-zone" aria-label="Usuário autenticado">
+                    <div class="profile-info">
+                        <span class="profile-name" id="usuario-logado-nome"></span>
+                        <span class="profile-role" id="usuario-logado-cargo"></span>
+                    </div>
+                    <div class="profile-img" id="usuario-logado-iniciais"></div>
+                </div>
+            </header>
+
+            <main class="main-core-content">
+                <section class="user-registration-card" aria-labelledby="titulo-edicao-usuario">
+                    <div class="user-registration-header">
+                        <div>
+                            <h2 id="titulo-edicao-usuario">Editar Perfil</h2>
+                            <p>Preencha os dados para editar o seu perfil.</p>
+                        </div>
+                    </div>
+
+                    <form id="form-edicao-usuario" novalidate>
+                        <div class="user-registration-layout">
+                            <section class="profile-photo-panel" aria-labelledby="titulo-foto-perfil">
+                                <h3 id="titulo-foto-perfil">Foto de perfil</h3>
+                                <div id="foto-preview" class="photo-preview" aria-label="Pré-visualização da foto">👤</div>
+                                <p class="photo-help">JPG, JPEG ou PNG, com até 5 MB.</p>
+                                <input id="foto-perfil" type="file" accept=".jpg,.jpeg,.png,image/jpeg,image/png" hidden>
+                                <button id="btn-selecionar-foto" type="button" class="btn-orange-outline">Selecionar imagem</button>
+                                <button id="btn-remover-foto" type="button" class="btn-secondary-muted" style="display: none;">Remover foto</button>
+                                <p id="erro-foto" class="field-error" role="alert"></p>
+                            </section>
+
+                            <section class="user-form-fields">
+                                <div class="form-grid-2">
+                                    <div class="form-group">
+                                        <label for="usuario-username">Username</label>
+                                        <input type="text" id="usuario-username" name="username" placeholder="Digite o username" autocomplete="username" minlength="3" maxlength="100" required>
+                                        <p class="field-error" data-error-for="usuario-username"></p>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="usuario-senha">Senha</label>
+                                        <input type="password" id="usuario-senha" name="senha" placeholder="Mínimo de 8 caracteres" autocomplete="new-password" minlength="8" maxlength="255" required>
+                                        <p class="field-error" data-error-for="usuario-senha"></p>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="usuario-nome">Nome</label>
+                                        <input type="text" id="usuario-nome" name="nome" placeholder="Digite o nome" autocomplete="given-name" maxlength="100" required>
+                                        <p class="field-error" data-error-for="usuario-nome"></p>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="usuario-sobrenome">Sobrenome</label>
+                                        <input type="text" id="usuario-sobrenome" name="sobrenome" placeholder="Digite o sobrenome" autocomplete="family-name" maxlength="100" required>
+                                        <p class="field-error" data-error-for="usuario-sobrenome"></p>
+                                    </div>
+                                    <div class="form-group full-width">
+                                        <label for="usuario-email">E-mail</label>
+                                        <input type="email" id="usuario-email" name="email" placeholder="nome@empresa.com" autocomplete="email" maxlength="255" required>
+                                        <p class="field-error" data-error-for="usuario-email"></p>
+                                    </div>
+                                    <div class="form-group"></div>
+                                    <div class="form-group">
+                                        <label for="usuario-equipe">Equipe</label>
+                                        <select id="usuario-equipe" name="equipe" required></select>
+                                        <p class="field-error" data-error-for="usuario-equipe"></p>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="usuario-cargo">Cargo</label>
+                                        <select id="usuario-cargo" name="cargo" required></select>
+                                        <p class="field-error" data-error-for="usuario-cargo"></p>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="usuario-serie">Série</label>
+                                        <input type="number" id="usuario-serie" name="serie" placeholder="Série" step="1">
+                                        <p class="field-error" data-error-for="usuario-serie"></p>
+                                    </div>
+                                    <div class="form-group"></div>
+                                    <div class="form-group">
+                                        <label for="usuario-proxNumeroNFe">Próx. Nº NFe</label>
+                                        <input type="number" id="usuario-proxNumeroNFe" name="proxNumeroNFe" placeholder="Próximo número NFe " step="1">
+                                        <p class="field-error" data-error-for="usuario-proxNumeroNFe"></p>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="usuario-proxNumeroNFCe">Próx. Nº NFCe</label>
+                                        <input type="number" id="usuario-proxNumeroNFCe" name="proxNumeroNFCe" placeholder="Próximo número NFCe " step="1">
+                                        <p class="field-error" data-error-for="usuario-proxNumeroNFCe"></p>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="usuario-proxNumeroCTe">Próx. Nº CTe</label>
+                                        <input type="number" id="usuario-proxNumeroCTe" name="proxNumeroCTe" placeholder="Próximo número CTe " step="1">
+                                        <p class="field-error" data-error-for="usuario-proxNumeroCTe"></p>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="usuario-proxNumeroNFSe">Próx. Nº NFSe</label>
+                                        <input type="number" id="usuario-proxNumeroNFSe" name="proxNumeroNFSe" placeholder="Próximo número NFSe " step="1">
+                                        <p class="field-error" data-error-for="usuario-proxNumeroNFSe"></p>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="usuario-proxNumeroMDFe">Próx. Nº MDFe</label>
+                                        <input type="number" id="usuario-proxNumeroMDFe" name="proxNumeroMDFe" placeholder="Próximo número MDFe " step="1">
+                                        <p class="field-error" data-error-for="usuario-proxNumeroMDFe"></p>
+                                    </div>
+                                </div>
+                            </section>
+                        </div>
+
+                        <div class="user-registration-actions">
+                            <button type="button" class="btn-secondary-muted" onclick="voltarParaInicio()">Cancelar</button>
+                            <button type="submit" class="btn-primary-orange" id="btn-editar-usuario">Editar usuário</button>
+                        </div>
+                    </form>
+                </section>
+            </main>
+        </div>
+    </div>
+    <script src="../assets/js/consts.js"></script>
+    <script src="../assets/js/utils.js"></script>
+    <script src="../assets/js/edicao-usuario.js"></script>
+    <script src="../assets/js/cadastro-usuarios.js"></script>
+    <script src="../assets/js/edicao-usuario.js"></script>
+</body>
+</html>

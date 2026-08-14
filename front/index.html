@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>pEmissorNew - Login</title>
+    <link rel="stylesheet" href="/assets/css/style.css">
+</head>
+<body class="login-body">
+
+    <div class="login-container">
+        <button type="button" class="btn-admin-access" onclick="acessarCadastroUsuarios()" aria-label="Acessar cadastro de usuários como administrador" title="Acesso administrativo">⚙</button>
+        <!-- Identidade Visual do Sistema -->
+        <div class="login-brand">
+            <div class="brand-logo"></div>
+            <h1>pEmissorNew</h1>
+        </div>
+
+        <!-- Mensagem de erro oculta por padrão -->
+        <div id="login-error-msg" class="login-error-card" style="display: none;">
+        </div>
+
+        <!-- Formulário de Login -->
+        <form id="login-form" onsubmit="event.preventDefault(); executarLogin();">
+            <div class="form-group full-width" style="margin-bottom: 16px;">
+                <label for="login-user">Usuário</label>
+                <input type="text" id="login-user" placeholder="Digite seu usuário" required autocomplete="username">
+            </div>
+
+            <div class="form-group full-width" style="margin-bottom: 20px;">
+                <label for="login-password">Senha</label>
+                <input type="password" id="login-password" placeholder="Digite sua senha" required autocomplete="current-password">
+            </div>
+
+            <button type="submit" class="btn-primary-orange btn-login-submit">🚀 Entrar no Sistema</button>
+        </form>
+    </div>
+    <script src="../assets/js/consts.js"></script>
+    <script src="/assets/js/utils.js"></script>
+    <script src="/assets/js/login.js"></script>
+</body>
+</html>

@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>pEmissorNew - Painel de Controle</title>
+    <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+
+    <dialog id="modal-mensagem-sistema" class="modal-message-dialog">
+        <div class="modal-message-card">
+            <div class="modal-message-icon" id="modal-mensagem-icone"></div>
+            <h3 id="modal-mensagem-titulo">Mensagem</h3>
+            <p id="modal-mensagem-conteudo">Texto da mensagem.</p>
+            <button type="button" class="btn-primary-orange" onclick="fecharModalMensagem()">OK</button>
+        </div>
+    </dialog>
+
+    <dialog id="modal-dados-emissor" class="modal-emissor-dialog" aria-labelledby="modal-dados-emissor-titulo">
+        <form class="modal-emissor-card" onsubmit="event.preventDefault(); salvarDadosEmissor();">
+            <div class="modal-emissor-header">
+                <div>
+                    <h3 id="modal-dados-emissor-titulo">Dados do Emissor</h3>
+                    <p>Atualize as informações fiscais utilizadas nas emissões.</p>
+                </div>
+                <button type="button" class="modal-close-btn" aria-label="Fechar" onclick="fecharModalDadosEmissor()">×</button>
+            </div>
+
+            <div class="modal-emissor-fields">
+                <div class="form-group full-width">
+                    <label for="emissor-cpf-cnpj">CPF ou CNPJ</label>
+                    <input type="text" id="emissor-cpf-cnpj" placeholder="Digite o CPF ou CNPJ" maxlength="18" inputmode="numeric" autocomplete="off">
+                </div>
+                <div class="form-group">
+                    <label for="emissor-inscricao-estadual">Inscrição Estadual</label>
+                    <input type="text" id="emissor-inscricao-estadual" placeholder="Inscrição Estadual" maxlength="20" autocomplete="off">
+                </div>
+                <div class="form-group">
+                    <label for="emissor-inscricao-municipal">Inscrição Municipal</label>
+                    <input type="text" id="emissor-inscricao-municipal" placeholder="Inscrição Municipal" maxlength="20" autocomplete="off">
+                </div>
+                <div class="form-group">
+                    <label for="emissor-codigo-ibge-cidade">Código IBGE da Cidade</label>
+                    <input type="text" id="emissor-codigo-ibge-cidade" placeholder="Ex.: 4314902" maxlength="7" inputmode="numeric" autocomplete="off">
+                </div>
+                <div class="form-group">
+                    <label for="emissor-uf">UF</label>
+                    <select id="emissor-uf">
+                        <option value="">Selecione a UF</option>
+                        <option value="12">Acre</option>
+                        <option value="27">Alagoas</option>
+                        <option value="16">Amapá</option>
+                        <option value="13">Amazonas</option>
+                        <option value="29">Bahia</option>
+                        <option value="23">Ceará</option>
+                        <option value="53">Distrito Federal</option>
+                        <option value="32">Espírito Santo</option>
+                        <option value="52">Goiás</option>
+                        <option value="21">Maranhão</option>
+                        <option value="51">Mato Grosso</option>
+                        <option value="50">Mato Grosso do Sul</option>
+                        <option value="31">Minas Gerais</option>
+                        <option value="15">Pará</option>
+                        <option value="25">Paraíba</option>
+                        <option value="41">Paraná</option>
+                        <option value="26">Pernambuco</option>
+                        <option value="22">Piauí</option>
+                        <option value="33">Rio de Janeiro</option>
+                        <option value="24">Rio Grande do Norte</option>
+                        <option value="43">Rio Grande do Sul</option>
+                        <option value="11">Rondônia</option>
+                        <option value="14">Roraima</option>
+                        <option value="42">Santa Catarina</option>
+                        <option value="35">São Paulo</option>
+                        <option value="28">Sergipe</option>
+                        <option value="17">Tocantins</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="modal-emissor-actions">
+                <button type="button" class="btn-secondary-muted" onclick="fecharModalDadosEmissor()">Fechar</button>
+                <button type="submit" class="btn-primary-orange" id="btn-salvar-dados-emissor">Salvar</button>
+            </div>
+        </form>
+    </dialog>
+
+    <div class="app-layout">
+        
+        <aside class="sidebar">
+            <div>
+                <div class="brand-zone">pEmissorNew</div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">Documentos Fiscais</div>
+                    <ul class="nav-list">
+                        <li><button class="nav-item-btn active" id="btn-doc-nfe" onclick="navegar('NF-e', this)">📄 NF-e (Nota Eletrônica)</button></li>
+                        <li><button class="nav-item-btn" onclick="navegar('NFS-e', this)">🏢 NFS-e (Serviço)</button></li>
+                        <li><button class="nav-item-btn" onclick="navegar('NFC-e', this)">🛒 NFC-e (Consumidor)</button></li>
+                        <li><button class="nav-item-btn" onclick="navegar('CT-e', this)">🚚 CT-e (Transporte)</button></li>
+                    </ul>
+                </div>
+
+                <div class="nav-section" style="margin-top: 32px;">
+                    <div class="nav-section-title">Regras de Negócio</div>
+                    <ul class="nav-list">
+                        <li><button class="nav-item-btn highlight-menu" id="btn-cases-menu" onclick="abrirGerenciarCases(this)">📂 Gerenciar Cases</button></li>
+                    </ul>
+                </div>
+
+            </div>
+
+            <div class="sidebar-footer">
+                <button class="nav-item-btn" id="btn-config-menu" onclick="abrirConfiguracoes(this)">⚙️ Configurações do Sistema</button>
+            </div>
+        </aside>
+
+        <div class="right-container">
+            
+            <header class="topbar">
+                <div class="page-title-display" id="page-title-context">Emissor de NF-e</div>
+                
+                <div class="profile-zone" onclick="acessarEdicaoUsuario()">
+                    <div class="profile-info">
+                        <span class="profile-name">Eduardo G.</span>
+                        <span class="profile-role">Desenvolvedor</span>
+                    </div>
+                    <div class="profile-img">EG</div>
+                </div>
+            </header>
+
+            <nav class="operation-tabs" id="op-tabs-bar">
+                <button class="tab-btn active" id="tab-emissao-default" onclick="mudarOperacao('emissao', this)">Emissão</button>
+                <button class="tab-btn" onclick="mudarOperacao('eventos', this)">Eventos</button>
+                <button class="tab-btn" onclick="mudarOperacao('impressao', this)">Impressão</button>
+            </nav>
+
+            <main class="main-core-content" id="main-core-wrapper">
+                
+                <div id="view-core-operacional" style="display: flex; flex-direction: column; gap: 24px; height: 100%;">
+                    
+                    <div id="tab-view-emissao" class="dynamic-form-section active">
+                        <section class="operation-params-card">
+                            <div class="card-fields">
+                                <div class="form-group">
+                                    <label>Próximo Número</label>
+                                    <input type="number" id="next-number" value="1542">
+                                </div>
+                                <div class="form-group">
+                                    <label>Data e Hora da Operação</label>
+                                    <input type="datetime-local" id="emission-time">
+                                </div>
+                                <button class="btn-sync-time" onclick="sincronizarDataHora('emission-time')">🔄 Atual</button>
+                            </div>
+                            <button class="btn-orange-outline" onclick="abrirModalDadosEmissor()">Editar Dados do Emissor</button>
+                        </section>
+
+                        <section class="case-selector-zone">
+                            <div>
+                                <p style="font-size: 12px; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">Template ativo</p>
+                                <div style="display: flex; align-items: center;">
+                                    <span id="active-case-text" style="font-weight: 600; color: var(--text-dark);">Nenhum case selecionado</span>
+                                    <button id="btn-clear-case" class="btn-unselect-case" onclick="deselecionarCaseAtivo()" style="display: none;">❌</button>
+                                </div>
+                            </div>
+                            <button class="btn-primary-orange" onclick="abrirModalSelecaoRapida()">Selecionar Case</button>
+                        </section>
+
+                        <div class="workspace-grid">
+                            <textarea class="textarea-editor" id="editor-txt" placeholder="Selecione um Case para injetar o layout TXT básico de testes..."></textarea>
+                            <div class="action-sidebar-buttons">
+                                <button class="btn-control" onclick="alert('Case updated!')">💾 Salvar Alterações</button>
+                                <button class="btn-control" onclick="document.getElementById('editor-txt').value = ''">↩ Desfazer Alterações</button>
+                            </div>
+                        </div>
+                        <footer class="workspace-footer">
+                            <button class="btn-big-success" onclick="enviarFil('Emissão')">Emitir</button>
+                        </footer>
+                    </div>
+
+                    <div id="tab-view-eventos" class="dynamic-form-section">
+                        <section class="operation-params-card">
+                            <div class="card-fields" style="width: 100%;">
+                                <div class="form-group flex-1">
+                                    <label>Chave da Nota</label>
+                                    <input type="text" id="event-chave" placeholder="432607......................................" maxlength="44" style="width: 100%;">
+                                </div>
+                                <div class="form-group">
+                                    <label>Código do Evento</label>
+                                    <select id="event-codigo" style="width: 220px;">
+                                        <option value="110111">110111 - Cancelamento</option>
+                                        <option value="110110">110110 - Carta de Correção (CC-e)</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Nº Protocolo (nProt)</label>
+                                    <input type="text" id="event-nprot" placeholder="Ex: 143260000...">
+                                </div>
+                                <div class="form-group">
+                                    <label>Data/Hora Evento</label>
+                                    <input type="datetime-local" id="event-time">
+                                </div>
+                                <button class="btn-sync-time" onclick="sincronizarDataHora('event-time')">🔄 Atual</button>
+                            </div>
+                            <div class="form-group" style="width: 100%; margin-top: 12px;">
+                                <label>Justificativa / Motivo do Evento</label>
+                                <input type="text" id="event-justificativa" placeholder="Digite a justificativa legal (mínimo 15 caracteres)..." style="width: 100%;">
+                            </div>
+                        </section>
+                        <div class="workspace-grid">
+                            <textarea class="textarea-editor" id="editor-txt-eventos" placeholder="Texto estruturado do evento..."></textarea>
+                            <div class="action-sidebar-buttons">
+                                <button class="btn-control" onclick="gerarTxtEventoAutomático()">🛠️ Gerar do Formulário</button>
+                            </div>
+                        </div>
+                        <footer class="workspace-footer">
+                            <button class="btn-big-success" onclick="enviarFil('Evento')">🚀 Enviar para -FIL</button>
+                        </footer>
+                    </div>
+
+                    <div id="tab-view-impressao" class="dynamic-form-section">
+                        <section class="operation-params-card">
+                            <div class="card-fields" style="width: 100%;">
+                                <div class="form-group flex-1">
+                                    <label>Chave da Nota para Impressão</label>
+                                    <input type="text" id="print-chave" placeholder="Digite as 44 posições da chave de acesso..." maxlength="44" style="width: 100%;">
+                                </div>
+                            </div>
+                        </section>
+                        <div class="workspace-grid">
+                            <textarea class="textarea-editor" id="editor-txt-impressao" placeholder="Comando TXT de impressão..."></textarea>
+                            <div class="action-sidebar-buttons">
+                                <button class="btn-control" onclick="gerarTxtImpressao()">📝 Gerar Comando</button>
+                            </div>
+                        </div>
+                        <footer class="workspace-footer">
+                            <button class="btn-big-success" onclick="enviarFil('Impressão')">🖨️ Enviar Comando para -FIL</button>
+                        </footer>
+                    </div>
+
+                </div>
+
+                <div id="view-gerenciar-cases" class="dynamic-form-section">
+                    <div class="cases-management-container">
+                        
+                        <div class="cases-list-panel" id="panel-cases-lista">
+                            <div class="panel-header-actions">
+                                <div class="filter-and-add-group">
+                                    <div class="form-group">
+                                        <label>Documento Fiscal</label>
+                                        <select id="case-filter-doc" onchange="atualizarTabelaCasesMock()" style="width: 180px;">
+                                            <option value="NF-e">NF-e (Nota Eletrônica)</option>
+                                            <option value="NFS-e">NFS-e (Serviço)</option>
+                                            <option value="NFC-e">NFC-e (Consumidor)</option>
+                                            <option value="CT-e">CT-e (Transporte)</option>
+                                        </select>
+                                    </div>
+                                    <button class="btn-primary-orange" id="btn-add-new-case" onclick="exibirFormularioCase(false)">➕ Adicionar Novo Case</button>
+                                </div>
+
+                                <div class="sub-tabs">
+                                    <button class="sub-tab-btn active" id="tab-sub-proprio" onclick="alternarOrigemCases(true)">Meus Cases</button>
+                                    <button class="sub-tab-btn" id="tab-sub-outros" onclick="alternarOrigemCases(false)">Cases dos Outros</button>
+                                </div>
+                            </div>
+
+                            <table class="cases-table">
+                               <thead>
+                                   <tr>
+                                       <th>Nome do Case</th>
+                                       <th>Documento</th>
+                                       <th>Dono</th>
+                                       <th style="text-align: right;">Ações</th>
+                                   </tr>
+                               </thead>
+                               <tbody id="tbody-cases">
+                                   </tbody>
+                            </table>
+                        </div>
+
+                        <div class="cases-form-panel" id="panel-cases-form" style="display: none;">
+                            <h3 id="form-case-title" style="color: var(--text-dark); border-bottom: 1px solid var(--border); padding-bottom: 12px;">Adicionar Novo Case</h3>
+                            
+                            <input type="hidden" id="form-case-id" value="">
+
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                                <div class="form-group">
+                                    <label>Tipo de Documento</label>
+                                    <select id="form-case-doc">
+                                        <option value="NF-e">NF-e (Nota Eletrônica)</option>
+                                        <option value="NFS-e">NFS-e (Serviço)</option>
+                                        <option value="NFC-e">NFC-e (Consumidor)</option>
+                                        <option value="CT-e">CT-e (Transporte)</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Nome do Case (Template)</label>
+                                    <input type="text" id="form-case-nome" placeholder="Ex: Venda_Substituicao_UF">
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="checkbox-group">
+                                    <input type="checkbox" id="form-case-favorito">
+                                    <span>⭐ Marcar este case como Favorito</span>
+                                </label>
+                            </div>
+
+                            <div class="form-group full-width">
+                                <label>Observações / Descrição do Cenário</label>
+                                <textarea id="form-case-obs" placeholder="Escreva brevemente o que este layout testa (Ex: Teste de substituição de NFSe com tag X ativa)..." style="width: 100%; height: 80px; resize: none;"></textarea>
+                            </div>
+
+                            <div class="form-group full-width" style="flex: 1; display: flex; flex-direction: column;">
+                                <label>Estrutura do Case (Texto TXT)</label>
+                                <textarea id="form-case-txt" placeholder="Insira o layout TXT aqui (Ex: NOTA|1...)" style="width: 100%; height: 220px; font-family: monospace; resize: vertical;"></textarea>
+                            </div>
+
+                            <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 10px; border-top: 1px solid var(--border); padding-top: 20px;">
+                                <button class="btn-secondary-muted" onclick="fecharFormularioCase()">Cancelar</button>
+                                <button class="btn-primary-orange" onclick="salvarFormularioCaseDoBanco()">💾 Salvar Case</button>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <div id="view-configuracoes" class="config-view-mock">
+                    <div class="config-header">
+                        <div>
+                            <h2>Configurações do Sistema</h2>
+                            <p>Defina os parâmetros de comunicação para o ponto de leitura.</p>
+                        </div>
+                    </div>
+
+                    <div class="config-shell">
+                        <aside class="config-options-panel">
+                            <button type="button" class="config-option-btn highlight-menu active" data-option="ponto-leitura" onclick="mostrarOpcaoConfiguracao('ponto-leitura', this)">
+                                <span>📍</span>
+                                <span>Ponto de Leitura</span>
+                            </button>
+                        </aside>
+
+                        <section class="config-content-panel">
+                            <div id="config-panel-ponto-leitura" class="config-option-panel active">
+                                <div class="config-section-card">
+                                    <div class="config-point-selector-row">
+                                        <div class="form-group full-width">
+                                            <label for="cfg-ponto-leitura-select">Ponto de Leitura</label>
+                                            <select id="cfg-ponto-leitura-select" onchange="onSelecionarPontoLeitura(this.value)"></select>
+                                        </div>
+                                        <div class="config-action-buttons">
+                                            <button id="btn-cadastrar-ponto" type="button" class="btn-primary-orange" onclick="cadastrarPontoLeitura()">➕ Cadastrar</button>
+                                            <button id="btn-atualizar-ponto" type="button" class="btn-primary-orange" onclick="atualizarPontoLeitura()" style="display: none;">✏️ Atualizar</button>
+                                            <button id="btn-excluir-ponto" type="button" class="btn-secondary-muted" onclick="excluirPontoLeitura()" style="display: none;">🗑️ Excluir</button>
+                                        </div>
+                                    </div>
+
+                                    <div class="config-sub-tabs">
+                                        <button type="button" class="config-sub-tab-btn active" data-tab="fila-pasta" onclick="alternarFilaConfiguracao('fila-pasta', this)">Fila Pasta</button>
+                                        <button type="button" class="config-sub-tab-btn" data-tab="fila-banco" onclick="alternarFilaConfiguracao('fila-banco', this)">Fila Banco</button>
+                                    </div>
+
+                                    <div id="config-fila-pasta" class="config-sub-panel active">
+                                        <div class="form-grid-2">
+                                            <div class="form-group">
+                                                <label for="cfg-nome-ponto-pasta">Nome do Ponto de Leitura</label>
+                                                <input type="text" id="cfg-nome-ponto-pasta" placeholder="Nome do Ponto de Leitura" maxlength="255" required>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="cfg-ipv4-pasta">IPv4 do PC</label>
+                                                <div class="input-with-help">
+                                                    <input type="text" id="cfg-ipv4-pasta" placeholder="Ex.: 192.168.1.36" maxlength="15" inputmode="numeric" required>
+                                                    <span class="field-help" title="Abra o CMD e digite ipconfig pra descobrir o IPv4 computador">?</span>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="cfg-usuario-windows">Usuário do Windows</label>
+                                                <input type="text" id="cfg-usuario-windows" placeholder="Usuário do Windows" maxlength="255" required>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="cfg-senha-windows">Senha do Usuário do Windows</label>
+                                                <input type="password" id="cfg-senha-windows" placeholder="Senha do Usuário do Windows" maxlength="255" required>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="cfg-dominio">Domínio</label>
+                                                <input type="text" id="cfg-dominio" placeholder="Domínio do Windows (opcional)" maxlength="255">
+                                            </div>
+                                        </div>
+
+                                        <div class="config-help-actions">
+                                            <button type="button" class="btn-help-config" onclick="alternarAjudaCompartilhamento()">Ajuda</button>
+                                        </div>
+
+                                        <div id="help-compartilhamento" class="config-help-box" style="display: none;">
+                                            <p>A pasta "LeituraNFe" deve ser compartilhada na rede, e o usuário do Windows deve ter permissão de leitura e escrita nessa pasta.</p>
+                                            <p>Para compartilhar a pasta na rede, vá em "Painel de Controle" → "Central de Rede e Compartilhamento" → "Configurações de compartilhamento avançadas" → "Redes Privadas" → Ative a "Descoberta de Rede", "Configurar dispositivos conectados à rede automaticamente", "Compartilhamento de arquivos e impressoras".</p>
+                                            <p>Depois clique com o botão direito na pasta "LeituraNFe", vá em "Propriedades" → "Compartilhamento" → "Compartilhar" → Escolha seu usuário → "Compartilhar".</p>
+                                            <p>Em "Compartilhamento Avançado" → "Permissões" → Verifique se o usuário tem permissão pra tudo.</p>
+                                        </div>
+                                    </div>
+
+                                    <div id="config-fila-banco" class="config-sub-panel">
+                                        <div class="form-grid-2">
+                                            <div class="form-group">
+                                                <label for="cfg-nome-ponto-bd">Nome do Ponto de Leitura</label>
+                                                <input type="text" id="cfg-nome-ponto-bd" placeholder="Nome do Ponto de Leitura" maxlength="255" required>
+                                            </div>
+                                            <div class="form-group">
+                                                <!-- Apenas para deixar o espaço em branco -->
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="cfg-nome-bd">Nome do Banco de Dados</label>
+                                                <input type="text" id="cfg-nome-bd" placeholder="Nome do Banco de Dados" maxlength="255" required>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="cfg-tipo-banco">Tipo de banco</label>
+                                                <select id="cfg-tipo-banco">
+                                                    <option value="postgres">PostgreSQL</option>
+                                                </select>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="cfg-ipv4-banco">IPv4 do PC</label>
+                                                <input type="text" id="cfg-ipv4-banco" placeholder="Ex.: 192.168.1.36" maxlength="15" inputmode="numeric" required>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="cfg-porta-banco">Porta</label>
+                                                <input type="number" id="cfg-porta-banco" placeholder="5432" min="1" max="65535" required>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="cfg-usuario-banco">Usuário banco</label>
+                                                <input type="text" id="cfg-usuario-banco" placeholder="Usuário do Banco de Dados" maxlength="255" required>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="cfg-senha-banco">Senha banco</label>
+                                                <input type="password" id="cfg-senha-banco" placeholder="Senha do Banco de Dados" maxlength="255" required>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+                </div>
+
+            </main>
+        </div>
+    </div>
+    <script src="../assets/js/consts.js"></script>
+    <script src="../assets/js/utils.js"></script>
+    <script src="../assets/js/login.js"></script>
+    <script src="../assets/js/emissao.js"></script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+package org.tcc.eduardo.enums;
+
+public enum Cargo {
+    PROGRAMADOR,
+    PROGRAMADOR_ESTAGIARIO,
+    TESTADOR,
+    TESTADOR_ESTAGIARIO,
+    SCRUM_MASTER,
+    TECH_LEAD,
+    GERENTE,
+    GERENTE_GERAL,
+    LIDER,
+    ANALISTA_SUPORTE,
+    SUPORTE,
+    ESTAGIARIO
+}

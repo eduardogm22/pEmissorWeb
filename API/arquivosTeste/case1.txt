@@ -1,0 +1,103 @@
+[NFe]
+  [infNFe]
+    versao = 4.00
+    id = NFe43260712345678000123550010000012341000012345
+
+    [ide]
+      cUF = 43
+      cNF = 12345678
+      natOp = Venda de Mercadoria
+      mod = 55
+      serie = 1
+      nNF = 1234
+      dhEmi = 2026-07-15T14:32:10-03:00
+      tpNF = 1
+      idDest = 1
+      cMunFG = 4314100
+      tpImp = 1
+      tpEmis = 1
+      finNFe = 1
+      indFinal = 1
+      indPres = 1
+      procEmi = 0
+      verProc = SistemaTeste 1.0
+
+    [emit]
+      CNPJ = 12345678000123
+      xNome = Empresa Exemplo LTDA
+      xFant = Empresa Exemplo
+      IE = 1234567890
+      CRT = 3
+
+      [enderEmit]
+        xLgr = Rua das Flores
+        nro = 150
+        xBairro = Centro
+        cMun = 4314100
+        xMun = Porto Alegre
+        UF = RS
+        CEP = 90000000
+
+    [dest]
+      CPF = 12345678901
+      xNome = Eduardo Mello
+
+      [enderDest]
+        xLgr = Avenida Brasil
+        nro = 500
+        xBairro = Centro
+        cMun = 4305108
+        xMun = Caxias do Sul
+        UF = RS
+        CEP = 95000000
+
+    [det]
+      nItem = 1
+
+      [prod]
+        cProd = 001
+        xProd = Notebook Gamer
+        NCM = 84713012
+        CFOP = 5102
+        uCom = UN
+        qCom = 1.0000
+        vUnCom = 5500.00
+        vProd = 5500.00
+
+      [imposto]
+        [ICMS]
+          orig = 0
+          CST = 00
+          vBC = 5500.00
+          pICMS = 17.00
+          vICMS = 935.00
+
+        [PIS]
+          CST = 01
+          vBC = 5500.00
+          pPIS = 1.65
+          vPIS = 90.75
+
+        [COFINS]
+          CST = 01
+          vBC = 5500.00
+          pCOFINS = 7.60
+          vCOFINS = 418.00
+
+    [total]
+      [ICMSTot]
+        vBC = 5500.00
+        vICMS = 935.00
+        vProd = 5500.00
+        vNF = 5500.00
+
+    [transp]
+      modFrete = 0
+
+    [pag]
+      [detPag]
+        tPag = 03
+        vPag = 5500.00
+
+    [infAdic]
+      infCpl = Documento gerado apenas para testes do sistema de Cases.
