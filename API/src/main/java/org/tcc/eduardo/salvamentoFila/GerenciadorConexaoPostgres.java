@@ -7,10 +7,8 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Properties;
 
 public class GerenciadorConexaoPostgres {
     private final PontoLeituraEntity pontoLeituraEntity;
@@ -21,7 +19,7 @@ public class GerenciadorConexaoPostgres {
 
     private Connection getConnection() {
         try {
-            String url = "jdbc:postgresql://" + pontoLeituraEntity.ipv4 + ":" + pontoLeituraEntity.porta + "/" + pontoLeituraEntity.nomeBanco;
+            String url = "jdbc:postgresql://" + pontoLeituraEntity.url + ":" + pontoLeituraEntity.porta + "/" + pontoLeituraEntity.nomeBanco;
             System.out.println(url);
             return DriverManager.getConnection(url, pontoLeituraEntity.usuario, pontoLeituraEntity.senha);
         } catch (SQLException e) {

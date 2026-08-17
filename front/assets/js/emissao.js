@@ -1,3 +1,7 @@
+async function atualizarDadosEmissao() {
+    //preencher nos proximos numeros de cada doc
+}
+atualizarDadosEmissao();
 // --- BANCO MOCKADO LOCAL DE CASES ---
 let databaseCases = [
     {
@@ -53,6 +57,9 @@ let databaseCases = [
 ];
 
 let mostrandoCasesProprios = true;
+let casesDisponiveisParaSelecao = [];
+let usuariosDisponiveisParaSelecao = [];
+let ordenacaoSelecaoCases = { campo: "dhUltimaEmissao", direcao: "desc" };
 
 function sincronizarDataHora(inputId) {
     const agora = new Date();
@@ -103,9 +110,9 @@ function abrirGerenciarCases(botaoClicado) {
     botaoClicado.classList.add("active");
     document.getElementById("op-tabs-bar").style.display = "none";
     document.getElementById("page-title-context").innerText =
-        "Gerenciamento de Cases (Templates)";
+        "Gerenciamento de Cases";
     document.getElementById("view-gerenciar-cases").classList.add("active");
-    atualizarTabelaCasesMock();
+    atualizarTabelaCases();
 }
 
 function alternarOrigemCases(proprios) {
@@ -120,74 +127,102 @@ function alternarOrigemCases(proprios) {
         ? "flex"
         : "none";
     fecharFormularioCase();
-    atualizarTabelaCasesMock();
+    atualizarTabelaCases();
 }
 
-function atualizarTabelaCasesMock() {
-    const filtroDoc = document.getElementById("case-filter-doc").value;
+function retornaIniciais(nome) {
+    let result = '';
+    if (nome.indexOf(' ') !== -1) {
+        palavras = nome.split(' ');
+        result = palavras[0][0] + palavras[1][0];
+    } else {
+        result = nome.substring(0, 2);
+    }
+    return result.toUpperCase();
+}
+
+async function atualizarTabelaCases() {
+    const tipoDoc = document.getElementById("case-filter-doc").value;
     const tbody = document.getElementById("tbody-cases");
     tbody.innerHTML = "";
 
-    const casesFiltrados = databaseCases.filter((c) => {
-        const bateDoc = c.doc === filtroDoc;
-        const eMeu = c.dono === "Eduardo G.";
-        return bateDoc && (mostrandoCasesProprios ? eMeu : !eMeu);
-    });
+    const cases = await obterCasesAPI(tipoDoc, !mostrandoCasesProprios);
+    if (!cases) return;
 
-    if (casesFiltrados.length === 0) {
+    if (cases.length === 0) {
         tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:var(--text-muted); padding: 24px;">Nenhum Case encontrado.</td></tr>`;
         return;
     }
 
-    casesFiltrados.forEach((c) => {
+    cases.forEach((c) => {
         let botoesAcao = "";
-        let avatarClass =
-            c.dono === "Eduardo G." ? "table-avatar me" : "table-avatar";
-        let nomeExibicao = c.favorito ? `⭐ ${c.nome}` : c.nome;
+        let avatarClass = mostrandoCasesProprios ? "table-avatar me" : "table-avatar";
 
+        let iniciais;
+        let dono;
+
+        let nomeExibicao = c.favorito ? `⭐ ${c.nome}` : c.nome;
         if (mostrandoCasesProprios) {
             botoesAcao = `
                 <button class="btn-table-action edit" onclick="exibirFormularioCase(true, ${c.id})">✏️ Editar</button>
                 <button class="btn-table-action delete" onclick="excluirCaseDoBanco(${c.id})">🗑️ Deletar</button>
             `;
+            nomeCopProp = c.nomeCopiadoDe;
+            if (!nomeCopProp) {
+                avatarClass = '';
+            }
+            document.getElementById('th-copiado-proprietario').innerText = 'COPIADO DE';
         } else {
             botoesAcao = `
-                <button class="btn-table-action edit" onclick="visualizarCasePrompt(${c.id})">👁️ Ver TXT</button>
-                <button class="btn-table-action clone" onclick="clonarCaseDeTerceiro(${c.id})">👯 Clonar</button>
+            <button class="btn-table-action edit" onclick="visualizarCasePrompt(${c.id})">👁️ Ver TXT</button>
+            <button class="btn-table-action clone" onclick="clonarCaseDeTerceiro(${c.id})">👯 Clonar</button>
             `;
+            nomeCopProp = c.nomeProprietario;
+            document.getElementById('th-copiado-proprietario').innerText = 'PROPRIETÁRIO';
         }
+        iniciais = retornaIniciais(nomeCopProp);
+        
+        qtdUsos = c.qtdUsos === null ? 0 : c.qtdUsos;
+        dhUltimaEmissao = c.dhUltimaEmissao === null ? 'Nunca usado' : c.dhUltimaEmissao;
+
+        document.getElementById('form-case-id').value = c.id;
 
         tbody.innerHTML += `
             <tr>
                 <td style="font-weight:600;">${nomeExibicao}</td>
-                <td><span class="badge-user" style="background-color:#fff7ed; color:var(--primary);">${c.doc}</span></td>
+                <td style="text-align: center;"><button class="btn-table-action clone" onclick="clonarCaseDeTerceiro(${c.id})">👁️‍🗨️</button></td>
                 <td>
                     <div class="owner-cell">
-                        <div class="${avatarClass}">${c.iniciais}</div>
-                        <span style="font-weight: 500;">${c.dono}</span>
+                        <div class="${avatarClass}">${iniciais}</div>
+                        <span style="font-weight: 500;">${nomeCopProp}</span>
                     </div>
                 </td>
-                <td style="text-align: right;"><div class="table-actions" style="justify-content: flex-end;">${botoesAcao}</div></td>
+                <td style="text-align: center;" style="font-weight:600;">${dhUltimaEmissao}</td>
+                <td style="text-align: center;" style="font-weight:600;">${qtdUsos}</td>
+                <td style="text-align: center;"><div class="table-actions" style="justify-content: flex-end;">${botoesAcao}</div></td>
             </tr>
         `;
     });
 }
 
 /* --- LÓGICA DA NOVA TELA DE ADIÇÃO E EDIÇÃO --- */
-function exibirFormularioCase(isEdicao, id = null) {
+async function exibirFormularioCase(isEdicao, id = null) {
     document.getElementById("panel-cases-lista").style.display = "none";
     document.getElementById("panel-cases-form").style.display = "flex";
 
     if (isEdicao && id) {
         document.getElementById("form-case-title").innerText = "✏️ Editar Case";
-        const item = databaseCases.find((c) => c.id === id);
-        document.getElementById("form-case-id").value = item.id;
-        document.getElementById("form-case-doc").value = item.doc;
-        document.getElementById("form-case-nome").value = item.nome;
+
+        const caseEdit = await obterCaseAPIPorId(id);
+        if (!caseEdit) return;
+
+        document.getElementById("form-case-id").value = caseEdit.id;
+        document.getElementById("form-case-doc").value = caseEdit.tipoDoc;
+        document.getElementById("form-case-nome").value = caseEdit.nome;
         document.getElementById("form-case-favorito").checked =
-            item.favorito || false;
-        document.getElementById("form-case-obs").value = item.obs || "";
-        document.getElementById("form-case-txt").value = item.txt;
+            caseEdit.favorito || false;
+        document.getElementById("form-case-obs").value = caseEdit.descricao || "";
+        document.getElementById("form-case-txt").value = caseEdit.conteudo;
     } else {
         document.getElementById("form-case-title").innerText =
             "➕ Adicionar Novo Case";
@@ -206,21 +241,29 @@ function fecharFormularioCase() {
     document.getElementById("panel-cases-lista").style.display = "block";
 }
 
-function salvarFormularioCaseDoBanco() {
+async function cadastrarEditarCase() {
     const id = document.getElementById("form-case-id").value;
-    const doc = document.getElementById("form-case-doc").value;
+    const tipoDoc = document.getElementById("form-case-doc").value;
     const nome = document.getElementById("form-case-nome").value.trim();
     const favorito = document.getElementById("form-case-favorito").checked;
-    const obs = document.getElementById("form-case-obs").value.trim();
-    const txt = document.getElementById("form-case-txt").value;
+    const descricao = document.getElementById("form-case-obs").value.trim();
+    const conteudo = document.getElementById("form-case-txt").value;
+    const idProprietario = obterUsuarioLogado().id;
 
     if (!nome) {
-        alert("Por favor, digite um nome para identificar o seu case.");
+        abrirModalMensagem("Alerta!","Por favor, digite um nome para identificar o seu case.", "alerta");
         return;
     }
-
+    if (!tipoDoc) {
+        abrirModalMensagem("Alerta!","Por favor, selecione um tipo de documento.", "alerta");
+        return;
+    }
+    if (!conteudo) {
+        abrirModalMensagem("Alerta!","Por favor, preencha a estrutura do case.", "alerta");
+        return;
+    }
     if (id) {
-        // Modo Edição
+        // Edição
         const index = databaseCases.findIndex((c) => c.id == id);
         if (index !== -1) {
             databaseCases[index].doc = doc;
@@ -230,22 +273,27 @@ function salvarFormularioCaseDoBanco() {
             databaseCases[index].txt = txt;
         }
     } else {
-        // Modo Inserção
+        // Inserção
         const novoCase = {
-            id: Date.now(),
             nome: nome,
-            doc: doc,
-            dono: "Eduardo G.",
-            iniciais: "EG",
-            txt: txt,
-            favorito: favorito,
-            obs: obs,
+            descricao: descricao,
+            conteudo: conteudo,
+            tipoDoc: tipoDoc,
+            idProprietario: idProprietario,
+            favorito: favorito
         };
-        databaseCases.push(novoCase);
+        resp = await httpRequest('POST', ROTAS_API.cases(), novoCase);
+
+        if (resp.ok) {
+            abrirModalMensagem('Sucesso!', 'Case cadastrado com sucesso!', 'sucesso');
+        } else {
+            let erro = resp.body.message;
+            abrirModalMensagem('Erro!', 'Erro ao cadastrar case: ' + erro, 'erro');
+        }
     }
 
     fecharFormularioCase();
-    atualizarTabelaCasesMock();
+    atualizarTabelaCases();
 }
 
 function visualizarCasePrompt(id) {
@@ -258,7 +306,7 @@ function visualizarCasePrompt(id) {
 function excluirCaseDoBanco(id) {
     if (confirm("Deseja deletar este case?")) {
         databaseCases = databaseCases.filter((c) => c.id !== id);
-        atualizarTabelaCasesMock();
+        atualizarTabelaCases();
     }
 }
 
@@ -279,34 +327,165 @@ function clonarCaseDeTerceiro(id) {
     alternarOrigemCases(true);
 }
 
-function abrirModalSelecaoRapida() {
-    const contextoDoc = document
-        .getElementById("page-title-context")
-        .innerText.replace("Emissor de ", "");
-    const templatesDisponiveis = databaseCases.filter(
-        (c) => c.doc === contextoDoc,
-    );
+function escaparHtml(valor) {
+    return String(valor ?? "").replace(/[&<>'"]/g, (caractere) => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#039;", '"': "&quot;",
+    })[caractere]);
+}
 
-    if (templatesDisponiveis.length === 0) {
-        alert(`Nenhum case cadastrado para ${contextoDoc}.`);
+function obterTipoDocumentoAtual() {
+    const documento = document.getElementById("page-title-context").innerText.replace("Emissor de ", "");
+    return { "NF-e": "NFE", "NFS-e": "NFSE", "NFC-e": "NFCE", "CT-e": "CTE" }[documento];
+}
+
+function obterCopiadoDe(caseItem) {
+    return caseItem.nomeCopiadoDe || "Não copiado";
+}
+
+function obterValorOrdenacaoData(data) {
+    if (!data) return 0;
+    const valor = new Date(data).getTime();
+    return Number.isNaN(valor) ? 0 : valor;
+}
+
+function atualizarIndicadoresOrdenacaoSelecao() {
+    const indicadorData = document.getElementById("case-sort-date-indicator");
+    const indicadorUsos = document.getElementById("case-sort-uses-indicator");
+    if (!indicadorData || !indicadorUsos) return;
+
+    indicadorData.textContent = ordenacaoSelecaoCases.campo === "dhUltimaEmissao"
+        ? (ordenacaoSelecaoCases.direcao === "asc" ? "↑" : "↓") : "↕";
+    indicadorUsos.textContent = ordenacaoSelecaoCases.campo === "qtdUsos"
+        ? (ordenacaoSelecaoCases.direcao === "asc" ? "↑" : "↓") : "↕";
+}
+
+function alternarOrdenacaoSelecaoCases(campo) {
+    ordenacaoSelecaoCases.direcao = ordenacaoSelecaoCases.campo === campo && ordenacaoSelecaoCases.direcao === "desc"
+        ? "asc" : "desc";
+    ordenacaoSelecaoCases.campo = campo;
+    renderizarTabelaSelecaoCases();
+}
+
+function popularFiltroCopiadoDe() {
+    const select = document.getElementById("case-selection-copiado-de");
+    const valorSelecionado = select.value;
+    const usuarios = [...usuariosDisponiveisParaSelecao].sort((a, b) => {
+        const nomeA = `${a.nome || ""} ${a.sobrenome || ""}`.trim();
+        const nomeB = `${b.nome || ""} ${b.sobrenome || ""}`.trim();
+        return nomeA.localeCompare(nomeB, "pt-BR");
+    });
+    select.innerHTML = '<option value="">Todos</option>' + usuarios
+        .map((usuario) => {
+            const nome = `${usuario.nome || ""} ${usuario.sobrenome || ""}`.trim() || usuario.username;
+            return `<option value="${escaparHtml(usuario.id)}">${escaparHtml(nome)}</option>`;
+        })
+        .join("");
+    select.value = usuarios.some((usuario) => String(usuario.id) === valorSelecionado) ? valorSelecionado : "";
+}
+
+function renderizarTabelaSelecaoCases() {
+    const tbody = document.getElementById("tbody-selecao-cases");
+    if (!tbody) return;
+
+    const pesquisa = document.getElementById("case-selection-search").value.trim().toLocaleLowerCase("pt-BR");
+    const copiadoDe = document.getElementById("case-selection-copiado-de").value;
+    const { campo, direcao } = ordenacaoSelecaoCases;
+    const multiplicador = direcao === "asc" ? 1 : -1;
+    const cases = casesDisponiveisParaSelecao
+        .filter((caseItem) => caseItem.nome.toLocaleLowerCase("pt-BR").includes(pesquisa))
+        // Compatibilidade enquanto versões antigas da API ainda não aplicam ?copiadoDe=.
+        .filter((caseItem) => !copiadoDe || String(caseItem.idCopiadoDe) === copiadoDe)
+        .sort((a, b) => {
+            // Favoritos permanecem sempre no início, mesmo quando há ordenação.
+            if (Boolean(a.favorito) !== Boolean(b.favorito)) return a.favorito ? -1 : 1;
+            const valorA = campo === "dhUltimaEmissao" ? obterValorOrdenacaoData(a[campo]) : Number(a[campo] || 0);
+            const valorB = campo === "dhUltimaEmissao" ? obterValorOrdenacaoData(b[campo]) : Number(b[campo] || 0);
+            if (valorA !== valorB) return (valorA - valorB) * multiplicador;
+            return a.nome.localeCompare(b.nome, "pt-BR");
+        });
+
+    atualizarIndicadoresOrdenacaoSelecao();
+    if (!cases.length) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:var(--text-muted); padding:24px;">Nenhum Case encontrado.</td></tr>';
         return;
     }
 
-    let menuOpcoes = `Escolha um template de ${contextoDoc}:\n\n`;
-    templatesDisponiveis.forEach((c, index) => {
-        let prefixo = c.favorito ? "⭐ " : "";
-        menuOpcoes += `${index + 1} - ${prefixo}${c.nome} (${c.dono})\n`;
-    });
+    tbody.innerHTML = cases.map((caseItem) => {
+        const id = Number(caseItem.id);
+        const nome = `${caseItem.favorito ? "⭐ " : ""}${caseItem.nome}`;
+        const data = caseItem.dhUltimaEmissao || "Nunca usado";
+        const usos = caseItem.qtdUsos ?? 0;
+        const copiadoDeCase = obterCopiadoDe(caseItem);
+        return `<tr>
+            <td style="font-weight:600;">${escaparHtml(nome)}</td>
+            <td style="text-align:center;"><button class="btn-table-action edit" type="button" onclick="abrirDetalhesCase(${id})">👁️ Ver detalhes</button></td>
+            <td style="text-align:center;">${escaparHtml(copiadoDeCase)}</td>
+            <td style="text-align:center;">${escaparHtml(data)}</td>
+            <td style="text-align:center; font-weight:600;">${usos}</td>
+            <td style="text-align:center;"><button class="btn-primary-orange" type="button" onclick="selecionarCase(${id})">Selecionar</button></td>
+        </tr>`;
+    }).join("");
+}
 
-    const escolha = prompt(menuOpcoes);
-    if (escolha && escolha > 0 && escolha <= templatesDisponiveis.length) {
-        const caseEscolhido = templatesDisponiveis[escolha - 1];
-        document.getElementById("active-case-text").innerText =
-            caseEscolhido.nome;
-        document.getElementById("btn-clear-case").style.display =
-            "inline-block";
-        document.getElementById("editor-txt").value = caseEscolhido.txt;
-    }
+async function carregarCasesParaSelecao(copiadoDe = "") {
+    const tipoDoc = obterTipoDocumentoAtual();
+    if (!tipoDoc) return;
+
+    const [meusCases, casesDosOutros] = await Promise.all([
+        obterCasesAPI(tipoDoc, false, copiadoDe),
+        obterCasesAPI(tipoDoc, true, copiadoDe),
+    ]);
+    casesDisponiveisParaSelecao = [...(meusCases || []), ...(casesDosOutros || [])];
+    renderizarTabelaSelecaoCases();
+}
+
+async function filtrarCasesPorCopiadoDe() {
+    const copiadoDe = document.getElementById("case-selection-copiado-de").value;
+    await carregarCasesParaSelecao(copiadoDe);
+}
+
+async function abrirModalSelecaoRapida() {
+    const tipoDoc = obterTipoDocumentoAtual();
+    if (!tipoDoc) return;
+
+    usuariosDisponiveisParaSelecao = await obterUsuariosAPI();
+    document.getElementById("modal-selecionar-case-subtitulo").textContent = `Cases disponíveis para ${document.getElementById("page-title-context").innerText.replace("Emissor de ", "")}.`;
+    document.getElementById("case-selection-search").value = "";
+    popularFiltroCopiadoDe();
+    await carregarCasesParaSelecao();
+    document.getElementById("modal-selecionar-case").showModal();
+}
+
+function fecharModalSelecaoCase() {
+    document.getElementById("modal-selecionar-case").close();
+}
+
+async function selecionarCase(id) {
+    const caseResumo = casesDisponiveisParaSelecao.find((caseItem) => caseItem.id === id);
+    const caseCompleto = await obterCaseAPIPorId(id);
+    const caseEscolhido = caseCompleto || caseResumo;
+    if (!caseEscolhido) return;
+
+    document.getElementById("active-case-text").innerText = caseEscolhido.nome;
+    document.getElementById("btn-clear-case").style.display = "inline-block";
+    document.getElementById("editor-txt").value = caseEscolhido.conteudo || caseEscolhido.txt || "";
+    fecharModalSelecaoCase();
+}
+
+async function abrirDetalhesCase(id) {
+    const caseResumo = casesDisponiveisParaSelecao.find((caseItem) => caseItem.id === id);
+    const caseCompleto = await obterCaseAPIPorId(id);
+    const caseItem = caseCompleto || caseResumo;
+    if (!caseItem) return;
+
+    document.getElementById("modal-detalhes-case-titulo").textContent = caseItem.nome;
+    document.getElementById("modal-detalhes-case-subtitulo").textContent = `Copiado de: ${obterCopiadoDe(caseItem)} · Usos: ${caseItem.qtdUsos ?? 0} · Última emissão: ${caseItem.dhUltimaEmissao || "Nunca usado"}`;
+    document.getElementById("case-details-content").value = caseItem.conteudo || caseItem.txt || "";
+    document.getElementById("modal-detalhes-case").showModal();
+}
+
+function fecharModalDetalhesCase() {
+    document.getElementById("modal-detalhes-case").close();
 }
 
 function deselecionarCaseAtivo() {
@@ -357,13 +536,15 @@ async function popularSelectPontosLeitura() {
 function preencherDadosPontoLeitura(idPontoLeitura) {
     const nomePonto_bd = document.getElementById("cfg-nome-ponto-bd");
     const nomePonto_pasta = document.getElementById("cfg-nome-ponto-pasta");
+    const nomePonto_api_xpress = document.getElementById("cfg-nome-ponto-api-xpress");
+    const URL_api_xpress = document.getElementById("cfg-url-api-xpress");
     const tipoBanco = document.getElementById("cfg-tipo-banco");
     const nomeBanco = document.getElementById("cfg-nome-bd");
-    const ipv4_bd = document.getElementById("cfg-ipv4-banco");
+    const url_bd = document.getElementById("cfg-url-banco");
     const porta = document.getElementById("cfg-porta-banco");
     const usuario_bd = document.getElementById("cfg-usuario-banco");
     const senha_bd = document.getElementById("cfg-senha-banco");
-    const ipv4_pasta = document.getElementById("cfg-ipv4-pasta");
+    const url_pasta = document.getElementById("cfg-url-pasta");
     const usuario_pasta = document.getElementById("cfg-usuario-windows");
     const senha_pasta = document.getElementById("cfg-senha-windows");
     const dominio = document.getElementById("cfg-dominio");
@@ -371,13 +552,15 @@ function preencherDadosPontoLeitura(idPontoLeitura) {
     if (idPontoLeitura == null) {
         nomePonto_bd.value = "";
         nomePonto_pasta.value = "";
+        nomePonto_api_xpress.value = "";
+        URL_api_xpress.value = "";
         tipoBanco.value = "";
         nomeBanco.value = "";
-        ipv4_bd.value = "";
+        url_bd.value = "";
         porta.value = "";
         usuario_bd.value = "";
         senha_bd.value = "";
-        ipv4_pasta.value = "";
+        url_pasta.value = "";
         usuario_pasta.value = "";
         senha_pasta.value = "";
         dominio.value = "";
@@ -393,7 +576,7 @@ function preencherDadosPontoLeitura(idPontoLeitura) {
 
                         usuario_pasta.value = ponto.usuario || "";
                         senha_pasta.value = ponto.senha || "";
-                        ipv4_pasta.value = ponto.ipv4 || "";
+                        url_pasta.value = ponto.url || "";
                         dominio.value = ponto.dominio || "";
 
                         nomePonto_bd.value = "";
@@ -402,8 +585,11 @@ function preencherDadosPontoLeitura(idPontoLeitura) {
                         senha_bd.value = "";
                         tipoBanco.value = "";
                         nomeBanco.value = "";
-                        ipv4_bd.value = "";
-                    } else {
+                        url_bd.value = "";
+
+                        nomePonto_api_xpress.value = "";
+                        URL_api_xpress.value = "";
+                    } else if (ponto.tipoFila === "fila-banco") {
                         alternarFilaConfiguracao("fila-banco");
 
                         nomePonto_bd.value = ponto.nome || "";
@@ -412,12 +598,34 @@ function preencherDadosPontoLeitura(idPontoLeitura) {
                         senha_bd.value = ponto.senha || "";
                         tipoBanco.value = ponto.tipoBanco || "";
                         nomeBanco.value = ponto.nomeBanco || "";
-                        ipv4_bd.value = ponto.ipv4 || "";
+                        url_bd.value = ponto.url || "";
 
                         nomePonto_pasta.value = "";
                         usuario_pasta.value = "";
                         senha_pasta.value = "";
-                        ipv4_pasta.value = "";
+                        url_pasta.value = "";
+                        dominio.value = "";
+
+                        nomePonto_api_xpress.value = "";
+                        URL_api_xpress.value = "";
+                    } else {
+                        alternarFilaConfiguracao("api-xpress");
+
+                        nomePonto_api_xpress.value = ponto.nome || "";
+                        URL_api_xpress.value = ponto.url || "";
+
+                        nomePonto_bd.value = "";
+                        porta.value = "";
+                        usuario_bd.value = "";
+                        senha_bd.value = "";
+                        tipoBanco.value = "";
+                        nomeBanco.value = "";
+                        url_bd.value = "";
+
+                        nomePonto_pasta.value = "";
+                        usuario_pasta.value = "";
+                        senha_pasta.value = "";
+                        url_pasta.value = "";
                         dominio.value = "";
                     }
                 }
@@ -459,7 +667,7 @@ function obterDadosPontoLeitura() {
             tipoFila,
             tipoBanco: document.getElementById("cfg-tipo-banco").value.trim(),
             nomeBanco: document.getElementById("cfg-nome-bd").value.trim(),
-            ipv4: document.getElementById("cfg-ipv4-banco").value.trim(),
+            url: document.getElementById("cfg-url-banco").value.trim(),
             porta: document.getElementById("cfg-porta-banco").value.trim(),
             usuario: document.getElementById("cfg-usuario-banco").value.trim(),
             senha: document.getElementById("cfg-senha-banco").value,
@@ -467,31 +675,67 @@ function obterDadosPontoLeitura() {
         };
     }
 
+    if (tipoFila == "fila-banco") {
+        return {
+            nome: document.getElementById("cfg-nome-ponto-pasta").value.trim(),
+            tipoFila,
+            tipoBanco: "",
+            url: document.getElementById("cfg-url-pasta").value.trim(),
+            porta: "",
+            usuario: document.getElementById("cfg-usuario-windows").value.trim(),
+            senha: document.getElementById("cfg-senha-windows").value,
+            dominio: document.getElementById("cfg-dominio").value.trim(),
+        };
+    }
+
     return {
-        nome: document.getElementById("cfg-nome-ponto-pasta").value.trim(),
-        tipoFila,
-        tipoBanco: "",
-        ipv4: document.getElementById("cfg-ipv4-pasta").value.trim(),
-        porta: "",
-        usuario: document.getElementById("cfg-usuario-windows").value.trim(),
-        senha: document.getElementById("cfg-senha-windows").value,
-        dominio: document.getElementById("cfg-dominio").value.trim(),
-    };
+        nome : document.getElementById("cfg-nome-ponto-api-xpress").value.trim(),
+        url: document.getElementById("cfg-url-api-xpress").value.trim(),
+        tipoFila
+    }
 }
 
 function validarPontoLeitura(dados) {
     const camposObrigatorios = [
         [dados.nome, "Por favor, digite um nome para o ponto de leitura."],
+        [dados.url, "Por favor, informe a URL."],
         [dados.tipoFila, "Por favor, selecione um tipo de fila."],
-        [dados.ipv4, "Por favor, informe o endereço IPv4."],
-        [dados.usuario, "Por favor, informe o usuário."],
-        [dados.senha.trim(), "Por favor, informe a senha."],
     ];
+    const camposTestarLimite = [
+        [dados.nome, "O nome do ponto de leitura"],
+        [dados.tipoFila, "O tipo de fila"]        
+    ];
+    
+    if (dados.tipoFila === "api-xpress") {
+        camposTestarLimite.push(
+            [dados.url, "A URL"]
+        );
+    }
+    
+    if (dados.tipoFila === "fila-banco" || dados.tipoFila === "fila-pasta") {
+        camposObrigatorios.push(           
+            [dados.usuario, "Por favor, informe o usuário."],
+            [dados.senha.trim(), "Por favor, informe a senha."],
+        );
+        camposTestarLimite.push(
+            [dados.usuario, "O usuário"],
+            [dados.senha, "A senha"],
+        );
+    }
 
     if (dados.tipoFila === "fila-banco") {
         camposObrigatorios.push(
             [dados.tipoBanco, "Por favor, selecione um tipo de banco de dados."],
             [dados.porta, "Por favor, informe a porta do banco de dados."],
+        );
+        camposTestarLimite.push(
+            [dados.tipoBanco, "O tipo de banco"],
+        );
+    }
+
+    if (dados.tipoFila === "fila-pasta") {
+        camposTestarLimite.push(
+            [dados.dominio, "O domínio"],
         );
     }
 
@@ -501,13 +745,15 @@ function validarPontoLeitura(dados) {
         return false;
     }
 
-    if (!["fila-pasta", "fila-banco"].includes(dados.tipoFila)) {
+    if (!["fila-pasta", "fila-banco", "api-xpress"].includes(dados.tipoFila)) {
         abrirModalMensagem("Atenção!", "Selecione um tipo de fila válido.", "alerta");
         return false;
     }
 
-    if (dados.ipv4.length > 15 || !/^(?:25[0-5]|2[0-4]\d|1?\d?\d)(?:\.(?:25[0-5]|2[0-4]\d|1?\d?\d)){3}$/.test(dados.ipv4)) {
-        abrirModalMensagem("Atenção!", "Informe um endereço IPv4 válido, como 192.168.1.36.", "alerta");
+    if (dados.tipoFila !== "api-xpress" && 
+        dados.url !== "localhost" && 
+        (dados.url.length > 15 || !/^(?:25[0-5]|2[0-4]\d|1?\d?\d)(?:\.(?:25[0-5]|2[0-4]\d|1?\d?\d)){3}$/.test(dados.url))) {
+        abrirModalMensagem("Atenção!", "Informe um endereço IPv4 válido, como 192.168.1.36 ou informe localhost.", "alerta");
         return false;
     }
 
@@ -516,14 +762,8 @@ function validarPontoLeitura(dados) {
         return false;
     }
 
-    const campoComLimiteExcedido = [
-        [dados.nome, "O nome do ponto de leitura"],
-        [dados.tipoFila, "O tipo de fila"],
-        [dados.tipoBanco, "O tipo de banco"],
-        [dados.usuario, "O usuário"],
-        [dados.senha, "A senha"],
-        [dados.dominio, "O domínio"],
-    ].find(([valor]) => valor.length > 255);
+
+    const campoComLimiteExcedido = camposTestarLimite.find(([valor]) => valor.length > 255);
 
     if (campoComLimiteExcedido) {
         abrirModalMensagem("Atenção!", `${campoComLimiteExcedido[1]} deve ter no máximo 255 caracteres.`, "alerta");
@@ -564,7 +804,6 @@ async function cadastrarPontoLeitura() {
         comboPontoLeitura.value = resp.body.id;
         onSelecionarPontoLeitura(resp.body.id);
     } else {
-        console.log(resp.body == "");
         abrirModalMensagem(
             "Erro!",
             "Erro ao cadastrar ponto de leitura: " +
@@ -597,7 +836,6 @@ async function atualizarPontoLeitura() {
         );
         popularSelectPontosLeitura();
     } else {
-        console.log(resp.body == "");
         abrirModalMensagem(
             "Erro!",
             "Erro ao atualizar ponto de leitura: " +
@@ -751,7 +989,6 @@ function fecharModalDadosEmissor() {
 }
 
 async function salvarDadosEmissor() {
-    console.log("Iniciando o salvamento dos dados do emissor...");
     const usuario = obterUsuarioLogado();
     const botaoSalvar = document.getElementById("btn-salvar-dados-emissor");
     if (!usuario) return;

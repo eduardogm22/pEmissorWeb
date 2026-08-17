@@ -1,6 +1,8 @@
 package org.tcc.eduardo.entity;
 
 import io.quarkus.hibernate.orm.panache.PanacheEntity;
+import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
+import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -9,6 +11,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.tcc.eduardo.enums.TipoDoc;
 import java.time.LocalDateTime;
+import java.util.stream.Stream;
 
 @Entity
 @Table(indexes = {
@@ -27,8 +30,7 @@ public class CaseEntity extends PanacheEntity {
     public String descricao;
 
     @NotNull
-    @Lob
-    @Column(nullable = false)
+    @Column(columnDefinition = "TEXT")
     public String conteudo;
 
     @NotNull
@@ -46,6 +48,9 @@ public class CaseEntity extends PanacheEntity {
     @Column(nullable = false)
     public boolean ativo;
 
+    @Column
+    public LocalDateTime dhUltimaEmissao;
+
     @Column(nullable = false, updatable = false)
     @CreationTimestamp
     public LocalDateTime dhCadastro;
@@ -59,4 +64,24 @@ public class CaseEntity extends PanacheEntity {
 
     @ColumnDefault("false")
     public boolean favorito;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "usuario_id")
+    UsuarioEntity usuarioEntity;
+
+    public CaseEntity(String nome, String descricao, String conteudo, TipoDoc tipoDoc, UsuarioEntity proprietario, boolean favorito) {
+        this.nome = nome;
+        this.descricao = descricao;
+        this.conteudo = conteudo;
+        this.tipoDoc = tipoDoc;
+        this.proprietario = proprietario;
+        this.favorito = favorito;
+    }
+
+    public static PanacheQuery<PanacheEntityBase> findDosOutros(Long idProprietario) {
+        return find(
+                "proprietario.id != ?1",
+                idProprietario
+        );
+    }
 }

@@ -14,6 +14,20 @@
     --danger: #ef4444;
 }
 
+/* Tema escuro: as cores semânticas mantêm os componentes consistentes. */
+:root[data-theme="escuro"] {
+    color-scheme: dark;
+    --bg-main: #0f172a;
+    --bg-card: #172033;
+    --primary: #fb923c;
+    --primary-hover: #fdba74;
+    --primary-light: #3a2719;
+    --text-dark: #e5edf8;
+    --text-muted: #a7b6ca;
+    --border: #334155;
+    --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.25), 0 2px 4px -2px rgb(0 0 0 / 0.25);
+}
+
 * {
     box-sizing: border-box;
     margin: 0;
@@ -460,6 +474,114 @@ body {
     opacity: 0.8;
 }
 
+.modal-case-dialog {
+    width: min(1120px, calc(100vw - 40px));
+    height: min(760px, calc(100vh - 40px));
+    margin: auto;
+    padding: 0;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    background: var(--bg-card);
+    color: var(--text-dark);
+    box-shadow: 0 24px 48px rgba(15, 23, 42, .22);
+}
+
+.modal-case-dialog::backdrop {
+    background: rgba(15, 23, 42, .5);
+}
+
+.modal-case-card {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding: 24px;
+    height: 100%;
+    min-height: 0;
+}
+
+.modal-case-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 20px;
+}
+
+.modal-case-header h3 { font-size: 20px; }
+.modal-case-header p { margin-top: 5px; color: var(--text-muted); font-size: 14px; }
+
+.case-selection-filters {
+    display: flex;
+    align-items: flex-end;
+    gap: 16px;
+}
+
+.case-selection-filters input[type="search"] {
+    width: 100%;
+    height: 38px;
+    padding: 8px 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    background-color: var(--bg-card);
+    color: var(--text-dark);
+    font: inherit;
+    outline: none;
+}
+
+.case-selection-filters input[type="search"]:focus {
+    border-color: var(--primary);
+}
+
+.case-search-field { flex: 1; }
+
+.case-selection-table-wrapper {
+    flex: 1;
+    min-height: 0;
+    overflow: auto;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+}
+
+.case-selection-table { min-width: 820px; }
+.case-selection-table th:first-child,
+.case-selection-table td:first-child { width: 34%; }
+
+.case-sort-button {
+    border: 0;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    font-weight: inherit;
+    text-transform: inherit;
+    cursor: pointer;
+}
+
+.case-sort-button:hover { color: var(--primary); }
+
+.case-details-content {
+    min-height: 300px;
+    width: 100%;
+    resize: vertical;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 14px;
+    background: var(--bg-main);
+    color: var(--text-dark);
+    font-family: 'Fira Code', 'Courier New', monospace;
+    line-height: 1.5;
+}
+
+.modal-case-details {
+    height: auto;
+}
+
+.modal-case-details .modal-case-card {
+    height: auto;
+}
+
+@media (max-width: 640px) {
+    .case-selection-filters { flex-direction: column; align-items: stretch; }
+}
+
 .workspace-grid {
     display: grid;
     grid-template-columns: 1fr 180px;
@@ -732,6 +854,11 @@ body {
     font-size: 14px;
 }
 
+.cases-table th:first-child,
+.cases-table td:first-child {
+    width: 40%;
+}
+
 .cases-table th {
     background-color: #f8fafc;
     color: var(--text-muted);
@@ -756,6 +883,7 @@ body {
 .owner-cell {
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 10px;
 }
 
@@ -1300,3 +1428,61 @@ body {
     margin-bottom: 16px;
     text-align: center;
 }
+
+/* ================= CONTROLE E AJUSTES DO TEMA ================= */
+.theme-switch {
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: var(--bg-main);
+    color: var(--text-dark);
+    height: 38px;
+    padding: 0 10px 0 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
+    transition: border-color .2s, background-color .2s;
+}
+
+.theme-switch:hover,
+.theme-switch:focus-visible { border-color: var(--primary); outline: none; }
+.theme-switch-icon { color: var(--primary); font-size: 16px; line-height: 1; }
+.theme-switch-track { width: 30px; height: 16px; background: var(--border); border-radius: 999px; padding: 2px; display: flex; transition: background-color .2s; }
+.theme-switch-track span { width: 12px; height: 12px; border-radius: 50%; background: var(--bg-card); transition: transform .2s; }
+:root[data-theme="escuro"] .theme-switch-track { background: var(--primary); }
+:root[data-theme="escuro"] .theme-switch-track span { transform: translateX(14px); }
+.theme-switch-login { position: fixed; top: 20px; right: 20px; z-index: 1; }
+
+:root[data-theme="escuro"] .nav-item-btn.highlight-menu,
+:root[data-theme="escuro"] #btn-config-menu,
+:root[data-theme="escuro"] .textarea-editor,
+:root[data-theme="escuro"] .cases-table tr:hover td,
+:root[data-theme="escuro"] .config-option-btn.highlight-menu { background-color: #1b2638; }
+
+:root[data-theme="escuro"] .profile-zone:hover,
+:root[data-theme="escuro"] .btn-sync-time,
+:root[data-theme="escuro"] .sub-tabs,
+:root[data-theme="escuro"] .btn-control:hover { background-color: #202c3e; }
+
+:root[data-theme="escuro"] .form-group input[type="text"],
+:root[data-theme="escuro"] .form-group input[type="number"],
+:root[data-theme="escuro"] .form-group input[type="datetime-local"],
+:root[data-theme="escuro"] .form-group input[type="password"],
+:root[data-theme="escuro"] .form-group input[type="email"],
+:root[data-theme="escuro"] .form-group select,
+:root[data-theme="escuro"] .form-group textarea,
+:root[data-theme="escuro"] .textarea-editor:focus,
+:root[data-theme="escuro"] .btn-control,
+:root[data-theme="escuro"] .sub-tab-btn.active,
+:root[data-theme="escuro"] .config-content-panel,
+:root[data-theme="escuro"] .btn-help-config { background-color: #111a2a; color: var(--text-dark); }
+
+:root[data-theme="escuro"] .profile-photo-panel,
+:root[data-theme="escuro"] .config-options-panel,
+:root[data-theme="escuro"] .cases-table th { background-color: #1c293b; border-color: var(--border); }
+
+:root[data-theme="escuro"] .btn-secondary-muted { background-color: #334155; color: var(--text-dark); }
+:root[data-theme="escuro"] .btn-secondary-muted:hover { background-color: #475569; }
+:root[data-theme="escuro"] .config-view-mock { background-color: var(--bg-card); }

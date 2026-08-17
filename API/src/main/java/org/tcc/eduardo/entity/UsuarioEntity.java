@@ -57,6 +57,10 @@ public class UsuarioEntity extends PanacheEntity {
     @JoinColumn(name = "usuario_id")
     public DadosEmissaoEntity dadosEmissaoEntity;
 
+    @OneToMany(fetch = FetchType.LAZY)
+    @JoinColumn(name = "proprietario_id")
+    public List<CaseEntity> caseEntities;
+
     public UsuarioEntity(String username, String senha, String nome, String sobrenome, String email, Equipe equipe, Cargo cargo, PontoLeituraEntity pontoLeituraAtivo) {
         this.username = username;
         this.senha = senha;
@@ -72,6 +76,12 @@ public class UsuarioEntity extends PanacheEntity {
         return find(
                 "username = ?1 and senha = ?2",
                 username, senha)
+                .firstResult();
+    }
+    public static UsuarioEntity findByUsername(String username) {
+        return find(
+                "LOWER(username) = LOWER(?1)",
+                username)
                 .firstResult();
     }
 }

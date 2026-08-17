@@ -86,6 +86,64 @@
         </form>
     </dialog>
 
+    <dialog id="modal-selecionar-case" class="modal-case-dialog" aria-labelledby="modal-selecionar-case-titulo">
+        <div class="modal-case-card">
+            <div class="modal-case-header">
+                <div>
+                    <h3 id="modal-selecionar-case-titulo">Selecionar Case</h3>
+                    <p id="modal-selecionar-case-subtitulo">Escolha um case para carregar no editor.</p>
+                </div>
+                <button type="button" class="modal-close-btn" aria-label="Fechar" onclick="fecharModalSelecaoCase()">×</button>
+            </div>
+
+            <div class="case-selection-filters">
+                <div class="form-group case-search-field">
+                    <label for="case-selection-search">Nome do case</label>
+                    <input type="search" id="case-selection-search" placeholder="Pesquisar por nome" oninput="renderizarTabelaSelecaoCases()">
+                </div>
+                <div class="form-group">
+                    <label for="case-selection-copiado-de">Copiado de</label>
+                    <select id="case-selection-copiado-de" onchange="filtrarCasesPorCopiadoDe()">
+                        <option value="">Todos</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="case-selection-table-wrapper">
+                <table class="cases-table case-selection-table">
+                    <thead>
+                        <tr>
+                            <th>Nome do Case</th>
+                            <th style="text-align: center;">Ver Detalhes</th>
+                            <th style="text-align: center;">Copiado de</th>
+                            <th style="text-align: center;">
+                                <button class="case-sort-button" type="button" onclick="alternarOrdenacaoSelecaoCases('dhUltimaEmissao')">Dh Ult. Emit. <span id="case-sort-date-indicator">↕</span></button>
+                            </th>
+                            <th style="text-align: center;">
+                                <button class="case-sort-button" type="button" onclick="alternarOrdenacaoSelecaoCases('qtdUsos')">Usos <span id="case-sort-uses-indicator">↕</span></button>
+                            </th>
+                            <th style="text-align: center;"></th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbody-selecao-cases"></tbody>
+                </table>
+            </div>
+        </div>
+    </dialog>
+
+    <dialog id="modal-detalhes-case" class="modal-case-dialog modal-case-details" aria-labelledby="modal-detalhes-case-titulo">
+        <div class="modal-case-card">
+            <div class="modal-case-header">
+                <div>
+                    <h3 id="modal-detalhes-case-titulo">Detalhes do Case</h3>
+                    <p id="modal-detalhes-case-subtitulo"></p>
+                </div>
+                <button type="button" class="modal-close-btn" aria-label="Fechar" onclick="fecharModalDetalhesCase()">×</button>
+            </div>
+            <textarea id="case-details-content" class="case-details-content" readonly></textarea>
+        </div>
+    </dialog>
+
     <div class="app-layout">
         
         <aside class="sidebar">
@@ -95,10 +153,10 @@
                 <div class="nav-section">
                     <div class="nav-section-title">Documentos Fiscais</div>
                     <ul class="nav-list">
-                        <li><button class="nav-item-btn active" id="btn-doc-nfe" onclick="navegar('NF-e', this)">📄 NF-e (Nota Eletrônica)</button></li>
-                        <li><button class="nav-item-btn" onclick="navegar('NFS-e', this)">🏢 NFS-e (Serviço)</button></li>
-                        <li><button class="nav-item-btn" onclick="navegar('NFC-e', this)">🛒 NFC-e (Consumidor)</button></li>
-                        <li><button class="nav-item-btn" onclick="navegar('CT-e', this)">🚚 CT-e (Transporte)</button></li>
+                        <li><button class="nav-item-btn active" id="btn-doc-nfe" onclick="navegar('NF-e', this)">📄 NF-e</button></li>
+                        <li><button class="nav-item-btn" onclick="navegar('NFS-e', this)">🏢 NFS-e</button></li>
+                        <li><button class="nav-item-btn" onclick="navegar('NFC-e', this)">🛒 NFC-e</button></li>
+                        <li><button class="nav-item-btn" onclick="navegar('CT-e', this)">🚚 CT-e</button></li>
                     </ul>
                 </div>
 
@@ -158,7 +216,7 @@
 
                         <section class="case-selector-zone">
                             <div>
-                                <p style="font-size: 12px; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">Template ativo</p>
+                                <p style="font-size: 12px; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">Case ativo</p>
                                 <div style="display: flex; align-items: center;">
                                     <span id="active-case-text" style="font-weight: 600; color: var(--text-dark);">Nenhum case selecionado</span>
                                     <button id="btn-clear-case" class="btn-unselect-case" onclick="deselecionarCaseAtivo()" style="display: none;">❌</button>
@@ -249,11 +307,11 @@
                                 <div class="filter-and-add-group">
                                     <div class="form-group">
                                         <label>Documento Fiscal</label>
-                                        <select id="case-filter-doc" onchange="atualizarTabelaCasesMock()" style="width: 180px;">
-                                            <option value="NF-e">NF-e (Nota Eletrônica)</option>
-                                            <option value="NFS-e">NFS-e (Serviço)</option>
-                                            <option value="NFC-e">NFC-e (Consumidor)</option>
-                                            <option value="CT-e">CT-e (Transporte)</option>
+                                        <select id="case-filter-doc" onchange="atualizarTabelaCases()" style="width: 180px;">
+                                            <option value="NFE">NF-e</option>
+                                            <option value="NFSE">NFS-e</option>
+                                            <option value="NFCE">NFC-e</option>
+                                            <option value="CTE">CT-e</option>
                                         </select>
                                     </div>
                                     <button class="btn-primary-orange" id="btn-add-new-case" onclick="exibirFormularioCase(false)">➕ Adicionar Novo Case</button>
@@ -268,11 +326,13 @@
                             <table class="cases-table">
                                <thead>
                                    <tr>
-                                       <th>Nome do Case</th>
-                                       <th>Documento</th>
-                                       <th>Dono</th>
-                                       <th style="text-align: right;">Ações</th>
-                                   </tr>
+                                       <th style="text-align: left;">Nome do Case</th>
+                                       <th style="text-align: center;">Ver Detalhes</th>
+                                       <th style="text-align: center;" id="th-copiado-proprietario">Copiado de</th>
+                                       <th style="text-align: center;">Dh Ult. Emit.</th>
+                                       <th style="text-align: center;">Usos</th>
+                                       <th style="text-align: center;"></th>
+                                    </tr>
                                </thead>
                                <tbody id="tbody-cases">
                                    </tbody>
@@ -288,15 +348,15 @@
                                 <div class="form-group">
                                     <label>Tipo de Documento</label>
                                     <select id="form-case-doc">
-                                        <option value="NF-e">NF-e (Nota Eletrônica)</option>
-                                        <option value="NFS-e">NFS-e (Serviço)</option>
-                                        <option value="NFC-e">NFC-e (Consumidor)</option>
-                                        <option value="CT-e">CT-e (Transporte)</option>
+                                        <option value="NFE">NF-e</option>
+                                        <option value="NFSE">NFS-e</option>
+                                        <option value="NFCE">NFC-e</option>
+                                        <option value="CTE">CT-e</option>
                                     </select>
                                 </div>
                                 <div class="form-group">
-                                    <label>Nome do Case (Template)</label>
-                                    <input type="text" id="form-case-nome" placeholder="Ex: Venda_Substituicao_UF">
+                                    <label>Nome do Case</label>
+                                    <input type="text" id="form-case-nome" placeholder="Ex.: NF-e com IBSCBS e 100 itens">
                                 </div>
                             </div>
 
@@ -309,17 +369,17 @@
 
                             <div class="form-group full-width">
                                 <label>Observações / Descrição do Cenário</label>
-                                <textarea id="form-case-obs" placeholder="Escreva brevemente o que este layout testa (Ex: Teste de substituição de NFSe com tag X ativa)..." style="width: 100%; height: 80px; resize: none;"></textarea>
+                                <textarea id="form-case-obs" placeholder="Opcional. Escreva uma breve descrição sobre o case." style="width: 100%; height: 80px; resize: none;"></textarea>
                             </div>
 
                             <div class="form-group full-width" style="flex: 1; display: flex; flex-direction: column;">
                                 <label>Estrutura do Case (Texto TXT)</label>
-                                <textarea id="form-case-txt" placeholder="Insira o layout TXT aqui (Ex: NOTA|1...)" style="width: 100%; height: 220px; font-family: monospace; resize: vertical;"></textarea>
+                                <textarea id="form-case-txt" placeholder="Insira o conteudo do TXT aqui." style="width: 100%; height: 220px; font-family: monospace; resize: vertical;"></textarea>
                             </div>
 
                             <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 10px; border-top: 1px solid var(--border); padding-top: 20px;">
                                 <button class="btn-secondary-muted" onclick="fecharFormularioCase()">Cancelar</button>
-                                <button class="btn-primary-orange" onclick="salvarFormularioCaseDoBanco()">💾 Salvar Case</button>
+                                <button class="btn-primary-orange" onclick="cadastrarEditarCase()">💾 Salvar Case</button>
                             </div>
                         </div>
 
@@ -360,6 +420,7 @@
                                     <div class="config-sub-tabs">
                                         <button type="button" class="config-sub-tab-btn active" data-tab="fila-pasta" onclick="alternarFilaConfiguracao('fila-pasta', this)">Fila Pasta</button>
                                         <button type="button" class="config-sub-tab-btn" data-tab="fila-banco" onclick="alternarFilaConfiguracao('fila-banco', this)">Fila Banco</button>
+                                        <button type="button" class="config-sub-tab-btn" data-tab="api-xpress" onclick="alternarFilaConfiguracao('api-xpress', this)">API Xpress</button>
                                     </div>
 
                                     <div id="config-fila-pasta" class="config-sub-panel active">
@@ -369,9 +430,9 @@
                                                 <input type="text" id="cfg-nome-ponto-pasta" placeholder="Nome do Ponto de Leitura" maxlength="255" required>
                                             </div>
                                             <div class="form-group">
-                                                <label for="cfg-ipv4-pasta">IPv4 do PC</label>
+                                                <label for="cfg-url-pasta">IPv4 do PC</label>
                                                 <div class="input-with-help">
-                                                    <input type="text" id="cfg-ipv4-pasta" placeholder="Ex.: 192.168.1.36" maxlength="15" inputmode="numeric" required>
+                                                    <input type="text" id="cfg-url-pasta" placeholder="Ex.: 192.168.1.36" maxlength="15" inputmode="numeric" required>
                                                     <span class="field-help" title="Abra o CMD e digite ipconfig pra descobrir o IPv4 computador">?</span>
                                                 </div>
                                             </div>
@@ -421,8 +482,8 @@
                                                 </select>
                                             </div>
                                             <div class="form-group">
-                                                <label for="cfg-ipv4-banco">IPv4 do PC</label>
-                                                <input type="text" id="cfg-ipv4-banco" placeholder="Ex.: 192.168.1.36" maxlength="15" inputmode="numeric" required>
+                                                <label for="cfg-url-banco">IPv4 do Banco de Dados</label>
+                                                <input type="text" id="cfg-url-banco" placeholder="Ex.: 192.168.1.36" maxlength="15" inputmode="numeric" required>
                                             </div>
                                             <div class="form-group">
                                                 <label for="cfg-porta-banco">Porta</label>
@@ -437,6 +498,20 @@
                                                 <input type="password" id="cfg-senha-banco" placeholder="Senha do Banco de Dados" maxlength="255" required>
                                             </div>
                                         </div>
+                                    </div>
+
+                                    <div id="config-api-xpress" class="config-sub-panel active">
+                                        <class="form-grid-2">
+                                            <div class="form-group">
+                                                <label for="cfg-nome-ponto-api-xpress">Nome do Ponto de Leitura</label>
+                                                <input type="text" id="cfg-nome-ponto-api-xpress" placeholder="Nome do Ponto de Leitura" maxlength="255" required>
+                                                <label for=""></label>
+                                            </div>                                            
+                                            <div class="form-group">
+                                                <label for="cfg-url-api-xpress">URL DA API XPRESS</label>
+                                                <input type="text" id="cfg-url-api-xpress" placeholder="URL da API Xpress. Ex.: https://apixpress.erppraeter.com.br" maxlength="255" required>
+                                            </div>
+                                        </div>                                        
                                     </div>
                                 </div>
                             </div>

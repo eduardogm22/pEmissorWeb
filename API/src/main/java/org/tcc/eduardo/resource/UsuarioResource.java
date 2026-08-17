@@ -56,6 +56,17 @@ public class UsuarioResource {
                 .entity(usuarioService.retornaTodos())
                 .build();
     }
+    @PUT
+    @Path("/{id}")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response editarUsuario(@PathParam("id") Long id, UsuarioInDTO usuarioInDTO) {
+        UsuarioOutDTO usuarioOutDTO = usuarioService.atualiza(id, usuarioInDTO);
+        return Response.ok()
+                .entity(usuarioOutDTO)
+                .build();
+    }
+
     @GET
     @Path("/cargos")
     public Response retornarCargos() {

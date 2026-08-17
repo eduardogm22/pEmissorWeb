@@ -41,7 +41,7 @@ public class PontoLeituraService {
                 pontoLeituraDTO.tipoFila(),
                 pontoLeituraDTO.tipoBanco(),
                 pontoLeituraDTO.nomeBanco(),
-                pontoLeituraDTO.ipv4(),
+                pontoLeituraDTO.url(),
                 pontoLeituraDTO.porta(),
                 pontoLeituraDTO.usuario(),
                 pontoLeituraDTO.senha(),
@@ -102,7 +102,7 @@ public class PontoLeituraService {
         pontoLeituraEntity.usuario = pontoLeituraDTO.usuario();
         pontoLeituraEntity.senha = pontoLeituraDTO.senha();
         pontoLeituraEntity.dominio = pontoLeituraDTO.dominio();
-        pontoLeituraEntity.ipv4 = pontoLeituraDTO.ipv4();
+        pontoLeituraEntity.url = pontoLeituraDTO.url();
         pontoLeituraEntity.tipoBanco = pontoLeituraDTO.tipoBanco();
         pontoLeituraEntity.nomeBanco = pontoLeituraDTO.nomeBanco();
         pontoLeituraEntity.tipoFila = pontoLeituraDTO.tipoFila();

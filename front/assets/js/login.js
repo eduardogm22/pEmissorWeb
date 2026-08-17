@@ -12,6 +12,7 @@ async function executarLogin() {
         errorMsg.textContent = "✅ Login efetuado com sucesso!";
         errorMsg.style.display = "block";
         localStorage.setItem("dadosUsuario", JSON.stringify(resp.body));
+        salvarDadosEmissaoStorage(await obterDadosEmissaoAPI());
         window.location.href = "pages/emissao.html";
     } else if (resp.status === 401) {
         localStorage.removeItem("dadosUsuario");
@@ -45,7 +46,7 @@ async function acessarCadastroUsuarios() {
 
     if (resp.ok) {
         registrarSessaoAdministrador(userField, passwordField);
-        window.location.href = 'cadastro-usuarios.html';
+        window.location.href = '/pages/cadastro-usuarios.html';
         return;
     }
 

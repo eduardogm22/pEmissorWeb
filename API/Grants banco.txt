@@ -1,0 +1,4 @@
+\c pemissornew
+GRANT USAGE, CREATE ON SCHEMA public TO apiquarkus;
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO apiquarkus;
+GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO apiquarkus;

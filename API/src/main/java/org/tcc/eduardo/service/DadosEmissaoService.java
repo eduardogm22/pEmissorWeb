@@ -4,6 +4,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Response;
+import org.jspecify.annotations.NonNull;
 import org.tcc.eduardo.dto.DadosEmissaoDTO;
 import org.tcc.eduardo.entity.DadosEmissaoEntity;
 import org.tcc.eduardo.entity.UsuarioEntity;
@@ -19,8 +20,13 @@ public class DadosEmissaoService {
         if (DadosEmissaoEntity.findByUsuario_id(dadosEmissaoDTO.usuario_id()) != null) {
             throw new ClientErrorException("Usuário já tem dados emissão cadastrados! Faça uma atualização.", Response.Status.CONFLICT);
         }
+        DadosEmissaoEntity dadosEmissaoEntity = salvarDadosEmissaoEntityBD(dadosEmissaoDTO, usuarioEntity);
+        return DadosEmissaoDTO.fromEntity(dadosEmissaoEntity);
+    }
+
+    private static @NonNull DadosEmissaoEntity salvarDadosEmissaoEntityBD(DadosEmissaoDTO dadosEmissaoDTO, UsuarioEntity usuarioEntity) {
         DadosEmissaoEntity dadosEmissaoEntity = new DadosEmissaoEntity(
-            usuarioEntity,
+                usuarioEntity,
             dadosEmissaoDTO.proxNumeroNFe(),
             dadosEmissaoDTO.proxNumeroNFCe(),
             dadosEmissaoDTO.proxNumeroCTe(),
@@ -34,8 +40,9 @@ public class DadosEmissaoService {
             dadosEmissaoDTO.cidadeEmissor()
         );
         dadosEmissaoEntity.persist();
-        return DadosEmissaoDTO.fromEntity(dadosEmissaoEntity);
+        return dadosEmissaoEntity;
     }
+
     public DadosEmissaoDTO retornaPorUsuario_id(Long usuario_id) {
         DadosEmissaoEntity dadosEmissaoEntity = DadosEmissaoEntity.findByUsuario_id(usuario_id);
         if (dadosEmissaoEntity == null) {

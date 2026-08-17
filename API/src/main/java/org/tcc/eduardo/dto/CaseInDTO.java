@@ -1,4 +1,13 @@
 package org.tcc.eduardo.dto;
 
-public record CaseInDTO() {
+import org.tcc.eduardo.enums.TipoDoc;
+
+public record CaseInDTO(
+        String nome,
+        String descricao,
+        String conteudo,
+        TipoDoc tipoDoc,
+        Long idProprietario,
+        boolean favorito
+) {
 }

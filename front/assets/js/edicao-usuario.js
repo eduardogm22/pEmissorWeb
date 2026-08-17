@@ -1,5 +1,5 @@
-async function editarUsuario(jsonEdicao) {
-    return httpRequest('PUT', ROTAS_API.usuario(), jsonEdicao);
+async function editarUsuario(id, jsonEdicao) {
+    return httpRequest('PUT', ROTAS_API.usuario() + '/' + id, jsonEdicao);
 }
 
 async function editarDadosEmissao(jsonDadosEmissao) {
@@ -72,13 +72,7 @@ function preencherCamposUsuario() {
 }
 
 async function preencherCamposDadosEmissao() {
-    const usuarioLogado = obterUsuarioLogado();
-    if (!usuarioLogado) return;
-
-    const resp = await httpRequest('GET', ROTAS_API.dadosEmissao() + usuarioLogado.id);
-    if (!resp.ok) return;
-
-    const dadosEmissao = resp.body;
+    const dadosEmissao = obterDadosEmissaoStorage();
 
     Object.entries(dadosEmissao).forEach(([k, v]) => {
         const element = obterElemento('usuario-' + k);
@@ -100,20 +94,28 @@ async function enviarEdicaoUsuario(event) {
 
     definirEstadoEditando(true);
     try {
-        const resposta = await  editarUsuario(montarJSONEdicao());
+        const usuarioLogado = obterUsuarioLogado();
+        if (!usuarioLogado) return;
+
+        const resposta = await  editarUsuario(usuarioLogado.id, montarJSONEdicao());
         if (!resposta?.ok) throw new Error(resposta?.message || 'Não foi possível editar o usuário.');
 
         const usuarioId = resposta.body?.id;
         if (!usuarioId) throw new Error('ID do usuário não retornado na edição.');
 
+        localStorage.setItem("dadosUsuario", JSON.stringify(resposta.body));
+
         const dadosEmissao = montarJSONDadosEmissao(usuarioId);
-        const respostaDadosEmissao = await cadastrarDadosEmissao(dadosEmissao);
+        const respostaDadosEmissao = await editarDadosEmissao(dadosEmissao);
         if (!respostaDadosEmissao?.ok) throw new Error(respostaDadosEmissao?.message || 'Não foi possível editar os dados de emissão.');
+
+        salvarDadosEmissaoStorage(respostaDadosEmissao.body);
 
         if (fotoPerfilSelecionada) {
             const respostaFoto = await uploadFoto(fotoPerfilSelecionada, usuarioId);
             if (!respostaFoto?.ok) throw new Error(respostaFoto?.message || 'Não foi possível enviar a foto de perfil.');
         }
+        await iniciarTelaEdicaoUsuario();
         abrirModalMensagem('Sucesso!', 'Usuário editado com sucesso.', 'sucesso');
     } catch (erro) {
         abrirModalMensagem('Erro!', erro.message || 'Não foi possível editar o usuário.', 'erro');
@@ -147,6 +149,10 @@ async function iniciarTelaEdicaoUsuario() {
 
 
     vincularEventosTelaEdicao();
+}
+
+function voltarParaTelaEmissao() {
+    window.location.href = "emissao.html";
 }
 
 document.addEventListener('DOMContentLoaded', iniciarTelaEdicaoUsuario);

@@ -17,15 +17,13 @@ public class PontoLeituraEntity extends PanacheEntity {
     @Column
     public String nomeBanco;
     @NotNull
-    @Column(nullable = false, length = 15)
-    public String ipv4;
+    @Column(nullable = false, length = 255)
+    public String url;
     @Column(length = 5)
     public String porta;
-    @NotNull
-    @Column(nullable = false)
+    @Column
     public String usuario;
-    @NotNull
-    @Column(nullable = false)
+    @Column
     public String senha;
     @Column
     public String dominio;
@@ -34,12 +32,12 @@ public class PontoLeituraEntity extends PanacheEntity {
     @JoinColumn(name = "usuario_id", nullable = false)
     public UsuarioEntity usuarioEntity;
 
-    public PontoLeituraEntity(String nome, String tipoFila, String tipoBanco, String nomeBanco, String ipv4, String porta, String usuario, String senha, String dominio, UsuarioEntity usuarioEntity) {
+    public PontoLeituraEntity(String nome, String tipoFila, String tipoBanco, String nomeBanco, String url, String porta, String usuario, String senha, String dominio, UsuarioEntity usuarioEntity) {
         this.nome = nome;
         this.tipoFila = tipoFila;
         this.tipoBanco = tipoBanco;
         this.nomeBanco = nomeBanco;
-        this.ipv4 = ipv4;
+        this.url = url;
         this.porta = porta;
         this.usuario = usuario;
         this.senha = senha;

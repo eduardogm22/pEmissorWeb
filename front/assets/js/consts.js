@@ -48,6 +48,9 @@ const ROTAS_API = {
     uploadFoto: (idUsuario) => `${_API_URL}/usuario/${idUsuario}/foto`,
     equipes: () => `${_API_URL}/usuario/equipes`,
     cargos: () => `${_API_URL}/usuario/cargos`,
+
+    cases: () => `${_API_URL}/case`,
+    getCases: (tipoDoc, idProprietario, dosOutros, copiadoDe = '') => `${_API_URL}/case?dosOutros=${dosOutros}&idProprietario=${idProprietario}&tipoDoc=${tipoDoc}${copiadoDe ? `&copiadoDe=${encodeURIComponent(copiadoDe)}` : ''}`
 };
 
 CREDENCIAIS_ADMINISTRADOR_AUTENTICADO = 'admin';
