@@ -1,5 +1,27 @@
 async function atualizarDadosEmissao() {
-    //preencher nos proximos numeros de cada doc
+    edt_prox_num = document.getElementById("next-number");
+    dadosEmissao = obterDadosEmissaoStorage();
+    switch (obterTipoDocumentoAtual()) {
+        case 'NFE':
+            edt_prox_num.value = dadosEmissao.proxNumeroNFe;
+            break;
+
+        case 'NFCE':
+            edt_prox_num.value = dadosEmissao.proxNumeroNFCe;
+            break;
+        
+        case 'NFSE':
+            edt_prox_num.value = dadosEmissao.proxNumeroNFSe;
+            break;
+
+        case 'CTE':
+            edt_prox_num.value = dadosEmissao.proxNumeroCTe;
+            break;
+
+        default:
+            edt_prox_num.value = '1';
+            break;
+    }    
 }
 atualizarDadosEmissao();
 // --- BANCO MOCKADO LOCAL DE CASES ---
@@ -91,6 +113,9 @@ function navegar(tipoDocumento, botaoClicado) {
     botaoClicado.classList.add("active");
     document.getElementById("page-title-context").innerText =
         `Emissor de ${tipoDocumento}`;
+
+    atualizarDadosEmissao();
+
     mudarOperacao("emissao", document.getElementById("tab-emissao-default"));
 }
 
@@ -469,6 +494,9 @@ async function selecionarCase(id) {
     document.getElementById("active-case-text").innerText = caseEscolhido.nome;
     document.getElementById("btn-clear-case").style.display = "inline-block";
     document.getElementById("editor-txt").value = caseEscolhido.conteudo || caseEscolhido.txt || "";
+
+    localStorage.setItem('caseSelecionadoId', id);
+
     fecharModalSelecaoCase();
 }
 
@@ -489,6 +517,8 @@ function fecharModalDetalhesCase() {
 }
 
 function deselecionarCaseAtivo() {
+    localStorage.setItem('caseSelecionadoId', -1);
+
     document.getElementById("active-case-text").innerText =
         "Nenhum case selecionado";
     document.getElementById("btn-clear-case").style.display = "none";
@@ -1026,9 +1056,27 @@ function gerarTxtEventoAutomático() {
 function gerarTxtImpressao() {
     document.getElementById("editor-txt-impressao").value =
         `IMPRIME|CHAVE:${document.getElementById("print-chave").value}`;
-}
+}    
+function montarJsonEmissao() {
+    conteudo = document.getElementById('editor-txt').value;
+    edt_prox_num = document.getElementById("next-number");
+    dhEmiss = document.getElementById('emission-time');
+    idCase = localStorage.getItem('caseSelecionadoId');
+    return {
+        "idCase": idCase,
+        "idUsuario": obterUsuarioLogado().id,
+        "tipoDoc": obterTipoDocumentoAtual(),
+        "conteudo": conteudo,
+        "dadosEmissao": obterDadosEmissaoStorage(), 
+    }
+};
 function enviarFil(op) {
-    alert(`Enviado para -FIL!`);
+    console.log('aaa')
+    json = montarJsonEmissao();
+    console.log(json);
+    if (op = 'Emissão') {
+        
+    }
 }
 
 async function acessarEdicaoUsuario() {
